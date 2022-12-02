@@ -5,6 +5,7 @@ import "../Utilities/BiometricHelper.dart";
 import '../Utilities/input_validator.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
+import 'dart:developer' as devtools show log;
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -42,6 +43,7 @@ class _LoginState extends State<Login> {
   bool isAuthenticated = false;
   bool biometricsAvialable = false;
   bool isLoading = false;
+  bool LoginSuccessfull = false;
   void isBiometricAvialble() async {
     biometricsAvialable =
         await BiometricHelper().canAuthenticateWithBiometrics();
@@ -161,9 +163,37 @@ class _LoginState extends State<Login> {
                           final userCredentials = await FirebaseAuth.instance
                               .signInWithEmailAndPassword(
                                   email: email, password: password);
-                          print(userCredentials);
+                          (userCredentials);
+                          setState(() {
+                            LoginSuccessfull = true;
+                          });
+                          if (LoginSuccessfull) {
+                            showAnimatedDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (BuildContext context) {
+                                return ClassicGeneralDialogWidget(
+                                  titleText: 'Login Successfull.',
+                                  contentText: 'You have been logged in.',
+                                  // onPositiveClick: () {
+                                  //   Navigator.of(context).pop();
+                                  // },
+                                  negativeTextStyle: const TextStyle(
+                                      color: Color.fromARGB(255, 98, 71, 230)),
+                                  positiveText: "Continue ",
+                                  onPositiveClick: () {
+                                    Navigator.pushNamedAndRemoveUntil(context,
+                                        "/verifyEmail", (route) => false);
+                                  },
+                                );
+                              },
+                              animationType: DialogTransitionType.size,
+                              curve: Curves.fastOutSlowIn,
+                              duration: const Duration(seconds: 1),
+                            );
+                          }
                         } on FirebaseAuthException catch (e) {
-                          print(e.code);
+                          (e.code);
                           if (e.code == "user-not-found") {
                             showAnimatedDialog(
                               context: context,
@@ -213,7 +243,7 @@ class _LoginState extends State<Login> {
                             );
                           }
                         } catch (e) {
-                          print(e.runtimeType);
+                          devtools.log(e.runtimeType.toString());
                         }
 
                         setState(() {
@@ -224,17 +254,10 @@ class _LoginState extends State<Login> {
                           emailIsEmpty = validate.emailFieldIsEmpty();
                           emailIsValid = validate.emailIsValid();
                           passwordIsValid = validate.passwordIsValid();
-
                           passwordIsEmpty = validate.passwordFieldIsEmpty();
-
                           isLoading = false;
                         });
                       }
-                      Map details = {
-                        "email": email,
-                        "password": password,
-                      };
-                      print(details);
                     },
                     child: Center(
                       child: Container(

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:notes/Constants/routes.dart';
 import "../Utilities/BiometricHelper.dart";
 import '../Utilities/input_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
+import '../Components/google_register.dart';
+import 'dart:developer' as devtools show log;
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -68,6 +71,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool confirmPasswordIsEmpty = false;
   String text = "";
   bool isVisible = false;
+  bool registrationSuccessfull = false;
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -76,7 +80,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             body: ListView(
               children: [
                 const SizedBox(
-                  height: 20,
+                  height: 70,
                 ),
                 Image.asset(
                   "assets/images/register.png",
@@ -87,7 +91,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
                   child: TextField(
                     onChanged: (value) {
-                      print(value);
                       if (value.length > 1) {
                         setState(() {
                           nameIsEmpty = false;
@@ -215,83 +218,119 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30.0),
                   child: GestureDetector(
-                    onTap: () async {
-                      setState(() {
-                        isLoading = true;
-                      });
-                      email = _emailController.text;
-                      password = _passwordController.text;
-                      confirmPassword = _confirmPasswordController.text;
-                      name = _nameController.text;
-                      final validate = InputValidator(
-                          fullName: name,
-                          email: email,
-                          password: password,
-                          confirmPassword: confirmPassword);
-                      final formisValid = validate.formIsValid();
-                      if (formisValid) {
-                        try {
-                          final userCredentials = await FirebaseAuth.instance
-                              .createUserWithEmailAndPassword(
-                                  email: email, password: password);
-                          print(userCredentials);
-                        } on FirebaseAuthException catch (e) {
-                          print(e.code);
-                          if (e.code == "email-already-in-use") {
-                            showAnimatedDialog(
-                              context: context,
-                              barrierDismissible: true,
-                              builder: (BuildContext context) {
-                                return ClassicGeneralDialogWidget(
-                                  titleText: 'Oops!.',
-                                  contentText:
-                                      'An account with this email already exists.',
-                                  // onPositiveClick: () {
-                                  //   Navigator.of(context).pop();
-                                  // },
-                                  negativeTextStyle: const TextStyle(
-                                      color: Color.fromARGB(255, 98, 71, 230)),
-                                  onNegativeClick: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                );
-                              },
-                              animationType: DialogTransitionType.size,
-                              curve: Curves.fastOutSlowIn,
-                              duration: const Duration(seconds: 1),
-                            );
+                    onTap: () {
+                      void register() async {
+                        setState(() {
+                          isLoading = true;
+                        });
+                        email = _emailController.text;
+                        password = _passwordController.text;
+                        confirmPassword = _confirmPasswordController.text;
+                        name = _nameController.text;
+                        final validate = InputValidator(
+                            fullName: name,
+                            email: email,
+                            password: password,
+                            confirmPassword: confirmPassword);
+                        final formisValid = validate.formIsValid();
+                        if (formisValid) {
+                          try {
+                            final userCredentials = await FirebaseAuth.instance
+                                .createUserWithEmailAndPassword(
+                                    email: email, password: password);
+                            (userCredentials);
+                            setState(() {
+                              registrationSuccessfull = true;
+                            });
+                            if (registrationSuccessfull) {
+                              showAnimatedDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (BuildContext context) {
+                                  return ClassicGeneralDialogWidget(
+                                    titleText: 'Registration Successfull.',
+                                    contentText:
+                                        'Congratulations! You have successfully registered an account.',
+                                    // onPositiveClick: () {
+                                    //   Navigator.of(context).pop();
+                                    // },
+                                    negativeTextStyle: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 98, 71, 230)),
+                                    positiveText: "Continue ",
+                                    onPositiveClick: () {
+                                      Navigator.pushNamed(
+                                          context, VerifyEmailRoute);
+                                    },
+                                  );
+                                },
+                                animationType: DialogTransitionType.size,
+                                curve: Curves.fastOutSlowIn,
+                                duration: const Duration(seconds: 1),
+                              );
+                            }
+
+                            // Navigator.pushNamed(context, "home");
+                          } on FirebaseAuthException catch (e) {
+                            setState(() {
+                              registrationSuccessfull = false;
+                            });
+                            devtools.log(e.code.toString());
+                            if (e.code == "email-already-in-use") {
+                              showAnimatedDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (BuildContext context) {
+                                  return ClassicGeneralDialogWidget(
+                                    titleText: 'Oops!.',
+                                    contentText:
+                                        'An account with this email already exists.',
+                                    // onPositiveClick: () {
+                                    //   Navigator.of(context).pop();
+                                    // },
+                                    negativeTextStyle: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 98, 71, 230)),
+                                    onNegativeClick: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  );
+                                },
+                                animationType: DialogTransitionType.size,
+                                curve: Curves.fastOutSlowIn,
+                                duration: const Duration(seconds: 1),
+                              );
+                            }
+                          } catch (e) {
+                            devtools.log(e.runtimeType.toString());
                           }
-                        } catch (e) {
-                          print(e.runtimeType);
+
+                          setState(() {
+                            isLoading = false;
+                          });
+                        } else {
+                          setState(() {
+                            emailIsEmpty = validate.emailFieldIsEmpty();
+                            emailIsValid = validate.emailIsValid();
+                            passwordIsValid = validate.passwordIsValid();
+                            passwordsMatch = validate.passwordsMatch();
+                            nameIsEmpty = validate.fullNameIsEmpty();
+                            passwordIsEmpty = validate.passwordFieldIsEmpty();
+                            confirmPasswordIsEmpty =
+                                validate.confirmPasswordIsEmpty();
+                            isLoading = false;
+                          });
                         }
-
-                        // if (context.mounted) {
-                        //   Navigator.pushNamed(context, "/home");
-                        // }
-
-                        setState(() {
-                          isLoading = false;
-                        });
-                      } else {
-                        setState(() {
-                          emailIsEmpty = validate.emailFieldIsEmpty();
-                          emailIsValid = validate.emailIsValid();
-                          passwordIsValid = validate.passwordIsValid();
-                          passwordsMatch = validate.passwordsMatch();
-                          nameIsEmpty = validate.fullNameIsEmpty();
-                          passwordIsEmpty = validate.passwordFieldIsEmpty();
-                          confirmPasswordIsEmpty =
-                              validate.confirmPasswordIsEmpty();
-                          isLoading = false;
-                        });
+                        Map details = {
+                          "email": email,
+                          "password": password,
+                          "confirmPassword": confirmPassword,
+                          "name": name
+                        };
+                        devtools.log(details.toString());
                       }
-                      Map details = {
-                        "email": email,
-                        "password": password,
-                        "confirmPassword": confirmPassword,
-                        "name": name
-                      };
-                      print(details);
+
+                      register();
                     },
                     child: Center(
                       child: Container(
@@ -320,42 +359,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                 ),
                 const SizedBox(height: 15),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
-                  child: GestureDetector(
-                    child: Center(
-                      child: Container(
-                        height: 60,
-                        width: 350,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                              width: 2,
-                              color: const Color.fromARGB(255, 98, 71, 230)),
-                          color: const Color.fromARGB(255, 255, 255, 255),
-                        ),
-                        child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset(
-                                "assets/images/google.png",
-                                height: 40,
-                              ),
-                              const Text(
-                                "Register with Google",
-                                style: TextStyle(
-                                    color: Color.fromARGB(255, 98, 71, 230),
-                                    fontWeight: FontWeight.w500,
-                                    fontSize: 15),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 30.0),
+                    child: GoogleRegisterButton()),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -369,7 +375,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, "/login");
+                        Navigator.pushNamed(context, LoginRoute);
                       },
                       child: const Text(
                         "Login.",
@@ -385,3 +391,5 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             )));
   }
 }
+
+void register() {}

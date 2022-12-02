@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:firebase_auth/firebase_auth.dart';
 
 class OnBoarding extends StatefulWidget {
   const OnBoarding({super.key});
@@ -30,8 +31,8 @@ class _OnBoardingState extends State<OnBoarding> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        backgroundColor: Color.fromARGB(255, 255, 255, 255),
-        body: Container(
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+        body: SizedBox(
           width: MediaQuery.of(context).size.width,
           child: Padding(
             padding: const EdgeInsets.all(20.0),
@@ -61,7 +62,7 @@ class _OnBoardingState extends State<OnBoarding> {
                                 isActive: index == _pageIndex,
                               ),
                             )),
-                    Spacer(),
+                    const Spacer(),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: SizedBox(
@@ -71,11 +72,25 @@ class _OnBoardingState extends State<OnBoarding> {
                           style: ElevatedButton.styleFrom(
                               shape: const CircleBorder(),
                               backgroundColor:
-                                  Color.fromARGB(255, 144, 124, 255)),
+                                  const Color.fromARGB(255, 144, 124, 255)),
                           onPressed: () {
-                            Navigator.pushNamed(context, "/registration");
+                            final user = FirebaseAuth.instance.currentUser;
+                            print(user);
+                            if (user != null) {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                "/home",
+                                (route) => false,
+                              );
+                            } else {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                "/registration",
+                                (route) => false,
+                              );
+                            }
                           },
-                          child: Text(
+                          child: const Text(
                             "Skip",
                             style: TextStyle(fontSize: 10.0),
                           ),
@@ -99,12 +114,13 @@ class DotIndicator extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 300),
       height: isActive ? 12 : 4,
       width: 4,
       decoration: BoxDecoration(
-          color: isActive ? Color.fromARGB(255, 24, 58, 246) : Colors.grey,
-          borderRadius: BorderRadius.all(Radius.circular(12))),
+          color:
+              isActive ? const Color.fromARGB(255, 24, 58, 246) : Colors.grey,
+          borderRadius: const BorderRadius.all(Radius.circular(12))),
     );
   }
 }
@@ -162,7 +178,7 @@ class OnboardContent extends StatelessWidget {
           textAlign: TextAlign.center,
           style: Theme.of(context)
               .textTheme
-              .headline5!
+              .headlineSmall!
               .copyWith(fontWeight: FontWeight.w500, fontSize: 28.0),
         ),
         const SizedBox(
