@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:notes/Constants/routes.dart';
 import '../Components/popup.dart';
 
-enum MenuAction { logout, login }
+enum MenuAction { logout, settings }
 
 class NotesView extends StatefulWidget {
   const NotesView({super.key});
@@ -33,7 +33,7 @@ class _NotesViewState extends State<NotesView> {
                           context, LoginRoute, (route) => false);
                     }
                     break;
-                  case MenuAction.login:
+                  case MenuAction.settings:
                     return;
                 }
               },
@@ -44,8 +44,8 @@ class _NotesViewState extends State<NotesView> {
                     child: Text("Logout"),
                   ),
                   const PopupMenuItem<MenuAction>(
-                    value: MenuAction.login,
-                    child: Text("LogIn"),
+                    value: MenuAction.settings,
+                    child: Text("Account Settings"),
                   ),
                 ];
               },

@@ -259,6 +259,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                             Color.fromARGB(255, 98, 71, 230)),
                                     positiveText: "Continue ",
                                     onPositiveClick: () {
+                                      Navigator.of(context).pop();
                                       Navigator.pushNamed(
                                           context, VerifyEmailRoute);
                                     },
@@ -275,7 +276,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             setState(() {
                               registrationSuccessfull = false;
                             });
-                            devtools.log(e.code.toString());
+
                             if (e.code == "email-already-in-use") {
                               showAnimatedDialog(
                                 context: context,
@@ -300,9 +301,52 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 curve: Curves.fastOutSlowIn,
                                 duration: const Duration(seconds: 1),
                               );
+                            } else {
+                              showAnimatedDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                builder: (BuildContext context) {
+                                  return ClassicGeneralDialogWidget(
+                                    titleText: 'Oops!.',
+                                    contentText: e.code,
+                                    // onPositiveClick: () {
+                                    //   Navigator.of(context).pop();
+                                    // },
+                                    negativeTextStyle: const TextStyle(
+                                        color:
+                                            Color.fromARGB(255, 98, 71, 230)),
+                                    onNegativeClick: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  );
+                                },
+                                animationType: DialogTransitionType.size,
+                                curve: Curves.fastOutSlowIn,
+                                duration: const Duration(seconds: 1),
+                              );
                             }
                           } catch (e) {
-                            devtools.log(e.runtimeType.toString());
+                            showAnimatedDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (BuildContext context) {
+                                return ClassicGeneralDialogWidget(
+                                  titleText: 'Oops!.',
+                                  contentText: e.toString(),
+                                  // onPositiveClick: () {
+                                  //   Navigator.of(context).pop();
+                                  // },
+                                  negativeTextStyle: const TextStyle(
+                                      color: Color.fromARGB(255, 98, 71, 230)),
+                                  onNegativeClick: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                );
+                              },
+                              animationType: DialogTransitionType.size,
+                              curve: Curves.fastOutSlowIn,
+                              duration: const Duration(seconds: 1),
+                            );
                           }
 
                           setState(() {

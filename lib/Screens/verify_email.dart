@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:notes/Constants/routes.dart';
 import 'package:notes/Screens/home.dart';
 import '../Utilities/firebase_options.dart';
 import '../Screens/login_screen.dart';
@@ -108,7 +109,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                                     positiveText: "Continue ",
                                     onPositiveClick: () {
                                       Navigator.of(context).pop();
-                                      Navigator.pushNamed(context, "/login");
+                                      Navigator.pushNamed(context, LoginRoute);
                                       setState(() {});
                                     },
                                   );
@@ -136,7 +137,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                                         size: 50.0,
                                       )
                                     : const Text(
-                                        "Register",
+                                        "Send Verification email.",
                                         style: TextStyle(
                                             color: Colors.white,
                                             fontWeight: FontWeight.w500,

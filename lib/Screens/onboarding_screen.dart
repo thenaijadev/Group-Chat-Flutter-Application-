@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:notes/Constants/routes.dart';
 
 class OnBoarding extends StatefulWidget {
   const OnBoarding({super.key});
@@ -85,7 +86,7 @@ class _OnBoardingState extends State<OnBoarding> {
                             } else {
                               Navigator.pushNamedAndRemoveUntil(
                                 context,
-                                "/registration",
+                                RegisterRoute,
                                 (route) => false,
                               );
                             }
