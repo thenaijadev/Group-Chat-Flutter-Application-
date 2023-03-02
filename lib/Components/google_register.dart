@@ -1,8 +1,6 @@
 import "package:flutter/material.dart";
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
-import 'dart:developer' as devtools show log;
+import '../Utilities/google_auth.dart';
+import "package:flutter_animated_dialog/flutter_animated_dialog.dart";
 
 class GoogleRegisterButton extends StatefulWidget {
   const GoogleRegisterButton({super.key});
@@ -14,57 +12,34 @@ class GoogleRegisterButton extends StatefulWidget {
 class _GoogleRegisterButtonState extends State<GoogleRegisterButton> {
   bool isLoading = false;
 
-  Future<void> _googleSignIn(context) async {
-    final googleSignIn = GoogleSignIn();
-    final googleAccount = await googleSignIn.signIn();
-
-    if (googleAccount != null) {
-      final googleAuth = await googleAccount.authentication;
-      if (googleAuth.accessToken != null && googleAuth.idToken != null) {
-        try {
-          await FirebaseAuth.instance.signInWithCredential(
-            GoogleAuthProvider.credential(
-                idToken: googleAuth.idToken,
-                accessToken: googleAuth.accessToken),
-          );
-          showAnimatedDialog(
-            context: context,
-            barrierDismissible: true,
-            builder: (BuildContext context) {
-              return ClassicGeneralDialogWidget(
-                titleText: 'Registration Successfull.',
-                contentText:
-                    'Congratulations! You have successfully registered an account.',
-                // onPositiveClick: () {
-                //   Navigator.of(context).pop();
-                // },
-                negativeTextStyle:
-                    const TextStyle(color: Color.fromARGB(255, 98, 71, 230)),
-                positiveText: "Continue ",
-                onPositiveClick: () {
-                  Navigator.pushNamed(context, "/verifyEmail");
-                },
-              );
-            },
-            animationType: DialogTransitionType.size,
-            curve: Curves.fastOutSlowIn,
-            duration: const Duration(seconds: 1),
-          );
-        } on FirebaseAuthException catch (e) {
-          devtools.log("This is error: $e.");
-          devtools.log(e.message.toString());
-        } catch (e) {
-          devtools.log(e.toString());
-        }
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        _googleSignIn(context);
+      onTap: () async {
+        await GoogleAuth.googleSignIn(context);
+        showAnimatedDialog(
+          context: context,
+          barrierDismissible: true,
+          builder: (BuildContext context) {
+            return ClassicGeneralDialogWidget(
+              titleText: 'Registration Successfull.',
+              contentText:
+                  'Congratulations! You have successfully registered an account.',
+              // onPositiveClick: () {
+              //   Navigator.of(context).pop();
+              // },
+              negativeTextStyle:
+                  const TextStyle(color: Color.fromARGB(255, 98, 71, 230)),
+              positiveText: "Continue ",
+              onPositiveClick: () {
+                Navigator.popAndPushNamed(context, "/verifyEmail");
+              },
+            );
+          },
+          animationType: DialogTransitionType.size,
+          curve: Curves.fastOutSlowIn,
+          duration: const Duration(seconds: 1),
+        );
       },
       child: Center(
         child: Container(

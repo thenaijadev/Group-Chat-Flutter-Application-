@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import '../Services/Auth/firebase_auth_provider.dart';
+import '../Helper/helper_function.dart';
 
 Future<bool> showLogoutDialog(BuildContext context) {
   return showDialog(
@@ -25,8 +28,13 @@ Future<bool> showLogoutDialog(BuildContext context) {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color.fromARGB(255, 172, 5, 5),
             ),
-            onPressed: () {
+            onPressed: () async {
+              await FirebaseAuthProvider().logOut();
               Navigator.of(context).pop(true);
+              context.go("/login");
+              HelperFunctions.saveUserEmailSharedPreferences("");
+              HelperFunctions.setUSerLoggedInStatus(false);
+              HelperFunctions.saveUserNameSharedPreferences("");
             },
             child: const Text("Log Out"),
           ),

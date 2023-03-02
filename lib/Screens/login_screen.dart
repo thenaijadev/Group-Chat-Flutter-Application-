@@ -1,8 +1,9 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:notes/Constants/routes.dart';
-import "../Utilities/BiometricHelper.dart";
+import 'package:notes/Services/Auth/auth_exception.dart';
+import 'package:notes/Services/Auth/auth_service.dart';
+
 import '../Utilities/input_validator.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
@@ -22,7 +23,7 @@ class _LoginState extends State<Login> {
   late final LocalAuthentication auth;
   late final bool canAuthenticateWithBiometrics;
   late final bool canAuthenticate;
-  var Biometrics = BiometricHelper();
+
   @override
   void initState() {
     super.initState();
@@ -45,13 +46,6 @@ class _LoginState extends State<Login> {
   bool biometricsAvialable = false;
   bool isLoading = false;
   bool LoginSuccessfull = false;
-  void isBiometricAvialble() async {
-    biometricsAvialable =
-        await BiometricHelper().canAuthenticateWithBiometrics();
-    showBiometrics = await BiometricHelper().hasEnrolledBiometrics();
-
-    setState(() {});
-  }
 
   String email = "";
   String password = "";
@@ -75,7 +69,7 @@ class _LoginState extends State<Login> {
             ),
             Image.asset(
               "assets/images/register.png",
-              height: 150,
+              height: 280,
             ),
             Container(
               padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 30),
@@ -156,10 +150,9 @@ class _LoginState extends State<Login> {
                   final loginFormIsValid = validate.loginFormIsValid();
                   if (loginFormIsValid) {
                     try {
-                      final userCredentials = await FirebaseAuth.instance
-                          .signInWithEmailAndPassword(
-                              email: email, password: password);
-                      (userCredentials);
+                      final userCredentials = await AuthService.firebase()
+                          .login(email: email, password: password);
+
                       setState(() {
                         LoginSuccessfull = true;
                       });
@@ -169,99 +162,75 @@ class _LoginState extends State<Login> {
                           barrierDismissible: true,
                           builder: (BuildContext context) {
                             return ClassicGeneralDialogWidget(
-                              titleText: 'Login Successfull.',
-                              contentText: 'You have been logged in.',
-                              // onPositiveClick: () {
-                              //   Navigator.of(context).pop();
-                              // },
-                              negativeTextStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 98, 71, 230)),
-                              positiveText: "Continue ",
-                              onPositiveClick: () {
-                                Navigator.pushNamedAndRemoveUntil(context,
-                                    VerifyEmailRoute, (route) => false);
-                              },
-                            );
+                                titleText: 'Login Successfull.',
+                                contentText: 'You have been logged in.',
+                                // onPositiveClick: () {
+                                //   Navigator.of(context).pop();
+                                // },
+                                negativeTextStyle: const TextStyle(
+                                    color: Color.fromARGB(255, 98, 71, 230)),
+                                positiveText: "Continue ",
+                                onPositiveClick: () {
+                                  context.go("/verifyEmail");
+                                });
                           },
                           animationType: DialogTransitionType.size,
                           curve: Curves.fastOutSlowIn,
                           duration: const Duration(seconds: 1),
                         );
                       }
-                    } on FirebaseAuthException catch (e) {
-                      (e.code);
-                      if (e.code == "user-not-found") {
-                        showAnimatedDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (BuildContext context) {
-                            return ClassicGeneralDialogWidget(
-                              titleText: 'Oops!.',
-                              contentText:
-                                  'You do not have an account, please register an account.',
-                              // onPositiveClick: () {
-                              //   Navigator.of(context).pop();
-                              // },
-                              negativeTextStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 98, 71, 230)),
-                              onNegativeClick: () {
-                                Navigator.of(context).pop();
-                              },
-                            );
-                          },
-                          animationType: DialogTransitionType.size,
-                          curve: Curves.fastOutSlowIn,
-                          duration: const Duration(seconds: 1),
-                        );
-                      } else {
-                        showAnimatedDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (BuildContext context) {
-                            return ClassicGeneralDialogWidget(
-                              titleText: 'There has been an error',
-                              contentText: 'Error: ${e.code}',
-                              negativeTextStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 98, 71, 230)),
-                              onNegativeClick: () {
-                                Navigator.of(context).pop();
-                              },
-                            );
-                          },
-                          animationType: DialogTransitionType.size,
-                          curve: Curves.fastOutSlowIn,
-                          duration: const Duration(seconds: 1),
-                        );
-                      }
-                      if (e.code == "wrong-password") {
-                        showAnimatedDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (BuildContext context) {
-                            return ClassicGeneralDialogWidget(
-                              titleText: 'Oops!.',
-                              contentText: 'The password you entered is wrong.',
-                              negativeTextStyle: const TextStyle(
-                                  color: Color.fromARGB(255, 98, 71, 230)),
-                              onNegativeClick: () {
-                                Navigator.of(context).pop();
-                              },
-                            );
-                          },
-                          animationType: DialogTransitionType.size,
-                          curve: Curves.fastOutSlowIn,
-                          duration: const Duration(seconds: 1),
-                        );
-                      }
-                    } catch (e) {
-                      devtools.log(e.runtimeType.toString());
+                    } on UserNotFoundAuthException {
                       showAnimatedDialog(
                         context: context,
                         barrierDismissible: true,
                         builder: (BuildContext context) {
                           return ClassicGeneralDialogWidget(
                             titleText: 'Oops!.',
-                            contentText: e.toString(),
+                            contentText:
+                                'You do not have an account, please register an account.',
+                            // onPositiveClick: () {
+                            //   Navigator.of(context).pop();
+                            // },
+                            negativeTextStyle: const TextStyle(
+                                color: Color.fromARGB(255, 98, 71, 230)),
+                            onNegativeClick: () {
+                              Navigator.of(context).pop();
+                            },
+                          );
+                        },
+                        animationType: DialogTransitionType.size,
+                        curve: Curves.fastOutSlowIn,
+                        duration: const Duration(seconds: 1),
+                      );
+                    } on WrongPasswordAuthException {
+                      showAnimatedDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) {
+                          return ClassicGeneralDialogWidget(
+                            titleText: 'Oops!.',
+                            contentText: 'The password you entered is wrong.',
+                            negativeTextStyle: const TextStyle(
+                                color: Color.fromARGB(255, 98, 71, 230)),
+                            onNegativeClick: () {
+                              Navigator.of(context).pop();
+                            },
+                          );
+                        },
+                        animationType: DialogTransitionType.size,
+                        curve: Curves.fastOutSlowIn,
+                        duration: const Duration(seconds: 1),
+                      );
+                    } on GenericAuthException catch (e) {
+                      devtools.log(e.runtimeType.toString());
+                      showAnimatedDialog(
+                        context: context,
+                        barrierDismissible: true,
+                        builder: (BuildContext context) {
+                          return ClassicGeneralDialogWidget(
+                            titleText: 'Authentication Error',
+                            contentText:
+                                "Please check your internet connectivity and try again.",
                             negativeTextStyle: const TextStyle(
                                 color: Color.fromARGB(255, 98, 71, 230)),
                             onNegativeClick: () {
@@ -315,42 +284,6 @@ class _LoginState extends State<Login> {
               ),
             ),
             const SizedBox(height: 15),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30.0),
-              child: GestureDetector(
-                child: Center(
-                  child: Container(
-                    height: 60,
-                    width: 350,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                          width: 2,
-                          color: const Color.fromARGB(255, 98, 71, 230)),
-                      color: const Color.fromARGB(255, 255, 255, 255),
-                    ),
-                    child: Center(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Image.asset(
-                            "assets/images/google.png",
-                            height: 40,
-                          ),
-                          const Text(
-                            "Login with Google",
-                            style: TextStyle(
-                                color: Color.fromARGB(255, 98, 71, 230),
-                                fontWeight: FontWeight.w500,
-                                fontSize: 15),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
             const SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -364,7 +297,7 @@ class _LoginState extends State<Login> {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, RegisterRoute);
+                    context.go("/registration");
                   },
                   child: const Text(
                     "Register.",

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:notes/Services/Auth/auth_service.dart';
 import '../Screens/verify_email.dart';
-import '../Screens/notes_view.dart';
+import 'groups_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,12 +12,20 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user!.emailVerified) {
-      return const NotesView();
-    } else {
-      return const VerifyEmailView();
+    final user = AuthService.firebase().currentUser;
+    if (user != null) {
+      if (user.isEmailVerified) {
+        return const NotesView();
+      } else {
+        return const VerifyEmailView();
+      }
     }
+    return const VerifyEmailView();
   }
 }

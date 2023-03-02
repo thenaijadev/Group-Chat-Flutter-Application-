@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:notes/Constants/routes.dart';
+
+import 'package:go_router/go_router.dart';
 import 'package:notes/Screens/home.dart';
-import '../Utilities/firebase_options.dart';
+import 'package:notes/Services/Auth/auth_service.dart';
 import '../Screens/login_screen.dart';
-import 'package:firebase_core/firebase_core.dart';
+
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'dart:developer' as devtools show log;
@@ -17,21 +17,19 @@ class VerifyEmailView extends StatefulWidget {
 }
 
 class _VerifyEmailViewState extends State<VerifyEmailView> {
-  final userEmail = FirebaseAuth.instance.currentUser?.email;
+  final userEmail = AuthService.firebase().currentUser?.email;
   bool isLoading = false;
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: Firebase.initializeApp(
-        options: DefaultFirebaseOptions.currentPlatform,
-      ),
+      future: AuthService.firebase().initialize(),
       builder: ((context, snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.done:
-            final user = FirebaseAuth.instance.currentUser;
+            final user = AuthService.firebase().currentUser;
             if (user != null) {
               devtools.log(user.toString());
-              if (user.emailVerified) {
+              if (user.isEmailVerified) {
                 devtools.log("u are verified");
                 return const HomeScreen();
               } else {
@@ -86,8 +84,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                               setState(() {
                                 isLoading = true;
                               });
-                              final user = FirebaseAuth.instance.currentUser;
-                              await user?.sendEmailVerification();
+                              AuthService.firebase().sendEmailVerification();
                               setState(() {
                                 isLoading = false;
                               });
@@ -109,7 +106,8 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
                                     positiveText: "Continue ",
                                     onPositiveClick: () {
                                       Navigator.of(context).pop();
-                                      Navigator.pushNamed(context, LoginRoute);
+
+                                      context.go("/login");
                                       setState(() {});
                                     },
                                   );

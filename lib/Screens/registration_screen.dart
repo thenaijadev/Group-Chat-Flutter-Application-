@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:notes/Constants/routes.dart';
+import 'package:notes/Services/Auth/auth_exception.dart';
+import 'package:notes/Services/Auth/auth_service.dart';
 import "../Utilities/BiometricHelper.dart";
 import '../Utilities/input_validator.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:flutter_animated_dialog/flutter_animated_dialog.dart';
-import '../Components/google_register.dart';
-import 'dart:developer' as devtools show log;
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -235,10 +234,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         final formisValid = validate.formIsValid();
                         if (formisValid) {
                           try {
-                            final userCredentials = await FirebaseAuth.instance
-                                .createUserWithEmailAndPassword(
-                                    email: email, password: password);
-                            (userCredentials);
+                            final userCredentials = await AuthService.firebase()
+                                .createUser(
+                                    email: email,
+                                    password: password,
+                                    fullName: name);
+
                             setState(() {
                               registrationSuccessfull = true;
                             });
@@ -260,8 +261,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                     positiveText: "Continue ",
                                     onPositiveClick: () {
                                       Navigator.of(context).pop();
-                                      Navigator.pushNamed(
-                                          context, VerifyEmailRoute);
+                                      context.go("/verifyEmail");
                                     },
                                   );
                                 },
@@ -272,67 +272,83 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             }
 
                             // Navigator.pushNamed(context, "home");
-                          } on FirebaseAuthException catch (e) {
-                            setState(() {
-                              registrationSuccessfull = false;
-                            });
-
-                            if (e.code == "email-already-in-use") {
-                              showAnimatedDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                builder: (BuildContext context) {
-                                  return ClassicGeneralDialogWidget(
-                                    titleText: 'Oops!.',
-                                    contentText:
-                                        'An account with this email already exists.',
-                                    // onPositiveClick: () {
-                                    //   Navigator.of(context).pop();
-                                    // },
-                                    negativeTextStyle: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 98, 71, 230)),
-                                    onNegativeClick: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  );
-                                },
-                                animationType: DialogTransitionType.size,
-                                curve: Curves.fastOutSlowIn,
-                                duration: const Duration(seconds: 1),
-                              );
-                            } else {
-                              showAnimatedDialog(
-                                context: context,
-                                barrierDismissible: true,
-                                builder: (BuildContext context) {
-                                  return ClassicGeneralDialogWidget(
-                                    titleText: 'Oops!.',
-                                    contentText: e.code,
-                                    // onPositiveClick: () {
-                                    //   Navigator.of(context).pop();
-                                    // },
-                                    negativeTextStyle: const TextStyle(
-                                        color:
-                                            Color.fromARGB(255, 98, 71, 230)),
-                                    onNegativeClick: () {
-                                      Navigator.of(context).pop();
-                                    },
-                                  );
-                                },
-                                animationType: DialogTransitionType.size,
-                                curve: Curves.fastOutSlowIn,
-                                duration: const Duration(seconds: 1),
-                              );
-                            }
-                          } catch (e) {
+                          } on EmailAlreadyInUseAuthException {
                             showAnimatedDialog(
                               context: context,
                               barrierDismissible: true,
                               builder: (BuildContext context) {
                                 return ClassicGeneralDialogWidget(
                                   titleText: 'Oops!.',
-                                  contentText: e.toString(),
+                                  contentText:
+                                      'An account with this email already exists.',
+                                  // onPositiveClick: () {
+                                  //   Navigator.of(context).pop();
+                                  // },
+                                  negativeTextStyle: const TextStyle(
+                                      color: Color.fromARGB(255, 98, 71, 230)),
+                                  onNegativeClick: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                );
+                              },
+                              animationType: DialogTransitionType.size,
+                              curve: Curves.fastOutSlowIn,
+                              duration: const Duration(seconds: 1),
+                            );
+                          } on WeakPasswordAuthException {
+                            showAnimatedDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (BuildContext context) {
+                                return ClassicGeneralDialogWidget(
+                                  titleText: 'Oops!.',
+                                  contentText: 'Your password is too weak.',
+                                  // onPositiveClick: () {
+                                  //   Navigator.of(context).pop();
+                                  // },
+                                  negativeTextStyle: const TextStyle(
+                                      color: Color.fromARGB(255, 98, 71, 230)),
+                                  onNegativeClick: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                );
+                              },
+                              animationType: DialogTransitionType.size,
+                              curve: Curves.fastOutSlowIn,
+                              duration: const Duration(seconds: 1),
+                            );
+                          } on InvalidEmailAuthException {
+                            showAnimatedDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (BuildContext context) {
+                                return ClassicGeneralDialogWidget(
+                                  titleText: 'Oops!.',
+                                  contentText:
+                                      'The email address provided is invalid.',
+                                  // onPositiveClick: () {
+                                  //   Navigator.of(context).pop();
+                                  // },
+                                  negativeTextStyle: const TextStyle(
+                                      color: Color.fromARGB(255, 98, 71, 230)),
+                                  onNegativeClick: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                );
+                              },
+                              animationType: DialogTransitionType.size,
+                              curve: Curves.fastOutSlowIn,
+                              duration: const Duration(seconds: 1),
+                            );
+                          } on GenericAuthException {
+                            showAnimatedDialog(
+                              context: context,
+                              barrierDismissible: true,
+                              builder: (BuildContext context) {
+                                return ClassicGeneralDialogWidget(
+                                  titleText: 'Authentication error.',
+                                  contentText:
+                                      "Please check your internet connectivity and try again.",
                                   // onPositiveClick: () {
                                   //   Navigator.of(context).pop();
                                   // },
@@ -365,13 +381,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             isLoading = false;
                           });
                         }
-                        Map details = {
-                          "email": email,
-                          "password": password,
-                          "confirmPassword": confirmPassword,
-                          "name": name
-                        };
-                        devtools.log(details.toString());
                       }
 
                       register();
@@ -403,9 +412,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   ),
                 ),
                 const SizedBox(height: 15),
-                const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30.0),
-                    child: GoogleRegisterButton()),
+                // const Padding(
+                //     padding: EdgeInsets.symmetric(horizontal: 30.0),
+                //     child: GoogleRegisterButton()),
                 const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -419,7 +428,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     ),
                     GestureDetector(
                       onTap: () {
-                        Navigator.pushNamed(context, LoginRoute);
+                        context.go("/login");
                       },
                       child: const Text(
                         "Login.",
