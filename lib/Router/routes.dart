@@ -2,11 +2,13 @@ import 'package:go_router/go_router.dart';
 import 'package:notes/Screens/chat_screen.dart';
 import 'package:notes/Screens/onboarding_screen_logic.dart';
 import 'package:notes/Screens/profile_screen.dart';
+import 'package:notes/Screens/search_screen.dart';
 import '../Screens/home.dart';
 import "../Screens/registration_screen.dart";
 import '../Screens/verify_email.dart';
 import '../Screens/login_screen.dart';
 import '../Helper/helper_function.dart';
+import '../Screens/group_info_screen.dart';
 
 // GoRouter configuration
 
@@ -49,10 +51,21 @@ class MyRouter {
             builder: (context, state) => const ProfileScreen(),
           ),
           GoRoute(
-            path: 'chat:groupDetails',
-            builder: (context, state) =>
-                ChatScreen(groupDetails: state.params['groupDetails']),
+            path: 'search',
+            builder: (context, state) => const SearchScreen(),
           ),
+          GoRoute(
+              path: 'chat:groupDetails',
+              builder: (context, state) =>
+                  ChatScreen(groupDetails: state.params['groupDetails']),
+              routes: [
+                GoRoute(
+                  path: 'groupInfo:groupDetail',
+                  builder: (context, state) => GroupInfoScreen(
+                    groupDetails: state.params["groupDetail"],
+                  ),
+                ),
+              ]),
         ]),
   ]);
 }

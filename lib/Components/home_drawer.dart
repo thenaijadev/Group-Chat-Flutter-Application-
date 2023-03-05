@@ -3,7 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../Helper/helper_function.dart';
 
 class HomeDrawer extends StatefulWidget {
-  HomeDrawer({super.key, this.userName, this.email});
+  const HomeDrawer({super.key, this.userName, this.email});
   final String? userName;
   final String? email;
 

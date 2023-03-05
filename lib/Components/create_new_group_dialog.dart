@@ -32,7 +32,7 @@ createNewGroupDialog(BuildContext context) {
                     )
                   : TextField(
                       onChanged: (value) {
-                        groupName = value;
+                        groupName = value.toUpperCase();
                       },
                       decoration: InputDecoration(
                         border: OutlineInputBorder(

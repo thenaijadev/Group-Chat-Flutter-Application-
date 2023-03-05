@@ -21,7 +21,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = AuthService.firebase().currentUser;
     if (user != null) {
       if (user.isEmailVerified) {
-        return const NotesView();
+        return const GroupsScreen();
       } else {
         return const VerifyEmailView();
       }

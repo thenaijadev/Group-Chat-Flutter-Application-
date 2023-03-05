@@ -20,7 +20,6 @@ class _ScreenLogicState extends State<ScreenLogic> {
 
   void isSignedIn() async {
     if (await HelperFunctions.getUserLoggedInStatus() != null) {
-      print({await HelperFunctions.getUserLoggedInStatus(), "onBo"});
       setState(() {
         signedIn = true;
       });

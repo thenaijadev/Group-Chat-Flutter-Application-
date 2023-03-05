@@ -7,15 +7,15 @@ import 'package:notes/Helper/helper_function.dart';
 import 'package:notes/Services/Auth/firebase_auth_provider.dart';
 import 'package:notes/Services/Database/database_service.dart';
 
-class NotesView extends StatefulWidget {
-  const NotesView({super.key});
+class GroupsScreen extends StatefulWidget {
+  const GroupsScreen({super.key});
 
   @override
-  State<NotesView> createState() => _NotesViewState();
+  State<GroupsScreen> createState() => _GroupsScreenState();
 }
 
 // actions are a list of widgets.
-class _NotesViewState extends State<NotesView> {
+class _GroupsScreenState extends State<GroupsScreen> {
   String? userName = "";
   String? email = "";
   Stream? groups;
@@ -47,7 +47,7 @@ class _NotesViewState extends State<NotesView> {
           actions: [
             IconButton(
               onPressed: () {
-                context.go("/search");
+                context.push("/home/search");
               },
               icon: const Icon(Icons.search),
             ),
